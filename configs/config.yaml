@@ -3,8 +3,8 @@ project:
   version: "1.0.0"
 
 data:
-  raw_data_path: data/raw/mental_health.csv
-  processed_data_path: data/processed/
+  raw_data_path: data/raw_data/mental_health.csv
+  processed_data_path: data/processed_data/
   test_size: 0.2
   random_state: 42
 
@@ -28,4 +28,3 @@ mlflow:
 serving:
   host: 0.0.0.0
   port: 8000
-EOF
