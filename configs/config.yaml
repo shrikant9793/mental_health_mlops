@@ -1,0 +1,31 @@
+project:
+  name: mental_health_mlops
+  version: "1.0.0"
+
+data:
+  raw_data_path: data/raw/mental_health.csv
+  processed_data_path: data/processed/
+  test_size: 0.2
+  random_state: 42
+
+features:
+  max_features: 10000
+  ngram_range: [1, 2]
+
+model:
+  name: logistic_regression
+  target_column: is_depression
+  text_column: clean_text
+
+training:
+  cv_folds: 5
+  scoring_metric: f1
+
+mlflow:
+  experiment_name: mental_health_classifier
+  tracking_uri: http://127.0.0.1:5000
+
+serving:
+  host: 0.0.0.0
+  port: 8000
+EOF
