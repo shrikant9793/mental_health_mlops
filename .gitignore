@@ -17,8 +17,9 @@ data/raw/
 data/processed/
 data/external/
 
-# Model Artifacts — tracked by MLflow
-models/artifacts/
+# Model Artifacts — tracked by DVC, not Git
+models/artifacts/*
+!models/artifacts/*.dvc
 
 # MLflow
 mlruns/
