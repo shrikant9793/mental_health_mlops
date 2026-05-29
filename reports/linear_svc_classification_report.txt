@@ -1,0 +1,10 @@
+=== linear_svc Classification Report ===
+
+                precision    recall  f1-score   support
+
+Non-Depression       0.95      0.97      0.96       780
+    Depression       0.97      0.94      0.96       767
+
+      accuracy                           0.96      1547
+     macro avg       0.96      0.96      0.96      1547
+  weighted avg       0.96      0.96      0.96      1547
