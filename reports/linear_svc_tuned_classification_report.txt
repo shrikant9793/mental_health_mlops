@@ -1,0 +1,10 @@
+=== LinearSVC Tuned Classification Report ===
+
+                precision    recall  f1-score   support
+
+Non-Depression       0.96      0.98      0.97       780
+    Depression       0.98      0.96      0.97       767
+
+      accuracy                           0.97      1547
+     macro avg       0.97      0.97      0.97      1547
+  weighted avg       0.97      0.97      0.97      1547
