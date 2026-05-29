@@ -5,3 +5,5 @@ pydantic==2.13.4
 
 # Monitoring
 evidently==0.4.30
+
+scikit-learn==1.5.0

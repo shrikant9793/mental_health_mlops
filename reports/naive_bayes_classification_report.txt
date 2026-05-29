@@ -1,0 +1,10 @@
+=== naive_bayes Classification Report ===
+
+                precision    recall  f1-score   support
+
+Non-Depression       0.97      0.82      0.89       780
+    Depression       0.84      0.98      0.91       767
+
+      accuracy                           0.90      1547
+     macro avg       0.91      0.90      0.90      1547
+  weighted avg       0.91      0.90      0.90      1547
