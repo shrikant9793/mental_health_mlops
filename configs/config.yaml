@@ -22,8 +22,9 @@ training:
   scoring_metric: f1
 
 mlflow:
-  experiment_name: mental_health_classifier
-  tracking_uri: http://127.0.0.1:5000
+  experiment_name: mental_health_classifier_v2
+  #tracking_uri: http://127.0.0.1:5000
+  tracking_uri: null
 
 serving:
   host: 0.0.0.0

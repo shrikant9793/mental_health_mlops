@@ -1,5 +1,6 @@
 import pandas as pd
 import yaml
+import os
 import joblib
 import mlflow
 import mlflow.sklearn
@@ -18,10 +19,19 @@ from src.models.evaluate import (
 )
 
 
+import os
+from dotenv import load_dotenv
+
 def load_config(config_path: str = "configs/config.yaml") -> dict:
-    """Load configuration from yaml file."""
+    load_dotenv()
     with open(config_path, "r") as f:
-        return yaml.safe_load(f)
+        config = yaml.safe_load(f)
+    mlruns_path = os.path.abspath("mlruns")
+    config["mlflow"]["tracking_uri"] = os.getenv(
+        "MLFLOW_TRACKING_URI",
+        f"file:///{mlruns_path}"
+    )
+    return config
 
 
 def load_splits(config: dict):
@@ -140,7 +150,9 @@ def train_best_model(study, X_train, X_test, y_train, y_test, config):
     print(f"\n⏳ Training best model with params: {best_params}")
 
     # Set MLflow
-    mlflow.set_tracking_uri(config["mlflow"]["tracking_uri"])
+    #mlflow.set_tracking_uri(config["mlflow"]["tracking_uri"])
+    tracking_uri = config["mlflow"]["tracking_uri"]
+    mlflow.set_tracking_uri(tracking_uri)
     mlflow.set_experiment(config["mlflow"]["experiment_name"])
 
     with mlflow.start_run(run_name="linear_svc_best_tuned"):
@@ -190,23 +202,30 @@ def train_best_model(study, X_train, X_test, y_train, y_test, config):
         # Save & log confusion matrix
         cm_path = "reports/linear_svc_tuned_confusion_matrix.png"
         save_confusion_matrix(y_test, y_pred, "LinearSVC Tuned", cm_path)
-        mlflow.log_artifact(cm_path)
+        #mlflow.log_artifact(os.path.abspath(cm_path))
+        pass
 
         # Save & log classification report
         cr_path = "reports/linear_svc_tuned_classification_report.txt"
         save_classification_report(y_test, y_pred, "LinearSVC Tuned", cr_path)
-        mlflow.log_artifact(cr_path)
+        #mlflow.log_artifact(os.path.abspath(cr_path))
+        pass
 
         # Save & log Optuna plot
         optuna_plot_path = "reports/optuna_study.png"
         save_optuna_plots(study, optuna_plot_path)
-        mlflow.log_artifact(optuna_plot_path)
+        #mlflow.log_artifact(os.path.abspath(optuna_plot_path))
+        pass
 
         # Save best model
         model_path = "models/artifacts/best_model.pkl"
         joblib.dump(pipeline, model_path)
-        mlflow.sklearn.log_model(pipeline, "best_model")
-        mlflow.log_artifact(model_path)
+        mlflow.sklearn.log_model(
+            sk_model=pipeline,
+            artifact_path="linear_svc_best_tuned"
+            )
+        #mlflow.log_artifact(os.path.abspath(model_path))
+        pass
 
         print(f"✅ Best model logged to MLflow!")
         print(f"✅ Best model saved to {model_path}")
