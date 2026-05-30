@@ -1,0 +1,41 @@
+# Virtual Environment
+venv/
+env/
+
+# Git
+.git/
+.gitignore
+
+# Data — mounted as volume
+data/
+
+# MLflow runs — mounted as volume
+mlruns/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tests
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Reports
+reports/
+
+# Secrets
+.env
