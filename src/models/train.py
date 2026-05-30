@@ -16,12 +16,18 @@ from src.models.evaluate import (
     save_classification_report
 )
 import os
-
+from dotenv import load_dotenv
 
 def load_config(config_path: str = "configs/config.yaml") -> dict:
-    """Load configuration from yaml file."""
+    load_dotenv()
     with open(config_path, "r") as f:
-        return yaml.safe_load(f)
+        config = yaml.safe_load(f)
+    mlruns_path = os.path.abspath("mlruns")
+    config["mlflow"]["tracking_uri"] = os.getenv(
+        "MLFLOW_TRACKING_URI",
+        f"file:///{mlruns_path}"
+    )
+    return config
 
 
 def load_splits(config: dict):
