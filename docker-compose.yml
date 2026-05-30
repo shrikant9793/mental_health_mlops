@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+
+  # ─── MLflow Tracking Server ──────────────────────────────────
+  mlflow:
+    image: python:3.12.7-slim
+    container_name: mlflow_server
+    working_dir: /mlflow
+    volumes:
+      - ./mlruns:/mlflow/mlruns
+    ports:
+      - "5000:5000"
+    command: >
+      bash -c "pip install mlflow==2.13.0 &&
+               mlflow server
+               --backend-store-uri file:///mlflow/mlruns
+               --host 0.0.0.0
+               --port 5000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ─── FastAPI App ──────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mental_health_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./mlruns:/app/mlruns
+      - ./models/artifacts:/app/models/artifacts
+    environment:
+      - MLFLOW_TRACKING_URI=file:///app/mlruns
+    depends_on:
+      - mlflow
+    restart: unless-stopped
+
+networks:
+  default:
+    name: mental_health_network
