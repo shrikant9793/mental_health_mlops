@@ -33,10 +33,25 @@ async def lifespan(app: FastAPI):
     global MODEL, MODEL_INFO, CONFIG
 
     print("⏳ Starting API — loading model...")
-    CONFIG     = load_config()
-    MODEL      = load_model_from_registry(MODEL_NAME, ALIAS, CONFIG)
-    MODEL_INFO = get_model_info(MODEL_NAME, ALIAS, CONFIG)
-    print("✅ Model loaded — API ready!")
+    # CONFIG     = load_config()
+    # MODEL      = load_model_from_registry(MODEL_NAME, ALIAS, CONFIG)
+    # MODEL_INFO = get_model_info(MODEL_NAME, ALIAS, CONFIG)
+    # print("✅ Model loaded — API ready!")
+
+    import joblib
+
+    CONFIG = load_config()
+
+    MODEL = joblib.load(
+        "/app/models/artifacts/best_model.pkl"
+    )
+
+    MODEL_INFO = {
+        "model_name": "best_model.pkl",
+        "model_version": "local"
+    }
+
+    print("✅ Local model loaded — API ready!")
 
     yield  # API runs here
 

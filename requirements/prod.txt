@@ -1,4 +1,5 @@
 # API Serving
+-r base.txt
 fastapi==0.111.0
 uvicorn==0.30.1
 pydantic==2.13.4
@@ -7,3 +8,6 @@ pydantic==2.13.4
 evidently==0.4.30
 
 scikit-learn==1.5.0
+
+# Model Registry
+mlflow==2.13.0

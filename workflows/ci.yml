@@ -1,0 +1,143 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - "feature/**"
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+
+  # ─── Job 1: Run Tests ───────────────────────────────────────
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.7"
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements/dev.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements/dev.txt
+
+      - name: Download NLTK data
+        run: |
+          python -c "import nltk; nltk.download('stopwords'); nltk.download('wordnet'); nltk.download('omw-1.4')"
+
+      - name: Run unit tests
+        run: |
+          pytest tests/ -v --cov=src --cov-report=xml
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+  # ─── Job 2: Code Quality ────────────────────────────────────
+  lint:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.7"
+
+      - name: Install linting tools
+        run: |
+          pip install flake8==7.0.0 black==24.4.2 isort==5.13.2
+
+      - name: Run flake8
+        run: |
+          flake8 src/ --max-line-length=100 --ignore=E501,W503
+
+      - name: Run black check
+        run: |
+          black src/ --check --line-length=100
+
+      - name: Run isort check
+        run: |
+          isort src/ --check-only
+
+  # ─── Job 3: Model Evaluation ────────────────────────────────
+  evaluate:
+    name: Model Evaluation
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.7"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements/dev.txt
+
+      - name: Download NLTK data
+        run: |
+          python -c "import nltk; nltk.download('stopwords'); nltk.download('wordnet'); nltk.download('omw-1.4')"
+
+      - name: Pull data from DVC
+        run: |
+          dvc pull
+        env:
+          MLFLOW_TRACKING_URI: file:///home/runner/work/mental_health_mlops/mental_health_mlops/mlruns
+
+      - name: Run preprocessing pipeline
+        run: |
+          python -m src.features.build_features
+        env:
+          MLFLOW_TRACKING_URI: file:///home/runner/work/mental_health_mlops/mental_health_mlops/mlruns
+
+      - name: Train and evaluate model
+        run: |
+          python -m src.models.train
+        env:
+          MLFLOW_TRACKING_URI: file:///home/runner/work/mental_health_mlops/mental_health_mlops/mlruns
+
+      - name: Check F1 threshold
+        run: |
+          python -c "
+          import mlflow
+          import os
+          mlflow.set_tracking_uri(os.getenv('MLFLOW_TRACKING_URI'))
+          from mlflow.tracking import MlflowClient
+          client = MlflowClient()
+          exp = client.get_experiment_by_name('mental_health_classifier_v2')
+          runs = client.search_runs(exp.experiment_id, order_by=['metrics.f1_score DESC'], max_results=1)
+          f1 = runs[0].data.metrics.get('f1_score', 0)
+          print(f'Best F1 Score: {f1:.4f}')
+          assert f1 >= 0.90, f'F1 score {f1:.4f} below threshold 0.90 — pipeline rejected!'
+          print('✅ F1 threshold passed!')
+          "
+        env:
+          MLFLOW_TRACKING_URI: file:///home/runner/work/mental_health_mlops/mental_health_mlops/mlruns
