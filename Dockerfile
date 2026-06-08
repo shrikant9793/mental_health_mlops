@@ -1,5 +1,6 @@
 # ─── Stage 1: Base Image ───────────────────────────────────────
-FROM python:3.12.7-slim AS base
+#FROM python:3.12.7-slim AS base
+FROM python:3.11-slim AS base
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -19,12 +20,11 @@ RUN apt-get update && apt-get install -y \
 FROM base AS dependencies
 
 # Copy requirements first — leverage Docker cache
-COPY requirements/base.txt requirements/base.txt
-COPY requirements/prod.txt requirements/prod.txt
+COPY requirements/serving.txt requirements/serving.txt
 
 # Install production dependencies only
 RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements/prod.txt
+    pip install --no-cache-dir -r requirements/serving.txt
 
 # ─── Stage 3: Final Image ─────────────────────────────────────
 FROM dependencies AS final
@@ -32,6 +32,12 @@ FROM dependencies AS final
 # Copy source code
 COPY src/ src/
 COPY configs/ configs/
+
+# Copy trained models
+COPY models/ models/
+
+# Create necessary directories
+RUN mkdir -p data/raw data/processed logs reports
 
 # Create necessary directories
 RUN mkdir -p data/raw data/processed models/artifacts logs reports

@@ -1,0 +1,13 @@
+# API Serving only — no heavy ML packages
+fastapi==0.111.0
+uvicorn==0.30.1
+pydantic==2.13.4
+mlflow==2.13.0
+scikit-learn==1.5.0
+pandas==2.2.2
+numpy==1.26.4
+nltk==3.8.1
+joblib==1.4.2
+pyyaml==6.0.1
+python-dotenv==1.0.1
+setuptools>=70.0.0
